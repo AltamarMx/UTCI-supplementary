@@ -1,0 +1,17 @@
+[project]
+name = "utci-supplementary"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jupyter>=1.1.1",
+    "marimo>=0.13.15",
+    "matplotlib>=3.10.3",
+    "nbclient>=0.10.2",
+    "nbformat>=5.10.4",
+    "pandas>=2.2.3",
+    "plotly>=6.1.2",
+    "pyarrow>=20.0.0",
+    "tabulate>=0.9.0",
+]
