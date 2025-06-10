@@ -1,15 +1,16 @@
-
-```{python}
-import pandas as pd
+# %% 
+import pandas as pd 
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.ticker as mticker
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
-
+# %%
 f = 'data/demanda_utci_regions.parquet'
-utci = pd.read_parquet(f)
+regions = pd.read_parquet(f)
+regions.info()
+# %%
 
+utci = regions.copy()
 # --- 1) Define stress category abbreviations (StressCategory) ---
 stress_categories = [
     ("MC",   -13,      0),    # Moderated cold
@@ -153,6 +154,6 @@ fig.legend(
     bbox_to_anchor=(0.5, 0.02)
 )
 
-plt.show();
+plt.show()
 
-```
+# %%

@@ -1,0 +1,128 @@
+
+```{python}
+
+from IPython.display import Markdown
+from tabulate import tabulate
+import pandas as pd
+
+f = 'data/demanda_utci_regions.parquet'
+utci = pd.read_parquet(f)
+regions = ['BCS','PEN','BC','NO','N','CEN','NE','ORI','OCC']
+
+
+# --- 2) Define seasons ---
+seasons = {
+    'Winter': [12, 1, 2],
+    'Spring': [3, 4, 5],
+    'Summer': [6, 7, 8],
+    'Autumn': [9, 10, 11]
+}
+# 0) Define stress categories (abbr, lower, upper)
+stress_categories = [
+    ("MC", -13,   0),   # Moderated cold
+    ("SC",   0,    9),  # Slight cold
+    ("No Thermal Stress",  9,   26),   # No thermal
+    ("Moderate Heat",     26,   32),   # Moderate heat
+    ("Strong Heat",       32,   38),   # Strong heat
+    ("Very Strong Heat",  38,   46)    # Very strong heat
+]
+
+def get_stress_abbr(val):
+    for abbr, low, high in stress_categories:
+        if low <= val < high:
+            return abbr
+    return None
+
+# 1) Calcula por región y temporada (en inglés)
+results = []
+for reg in regions:
+    for season_name, months in seasons.items():
+        df_season  = utci[utci.index.month.isin(months)]
+        grp_utci   = df_season.groupby(df_season.index.hour)[f'{reg}_UTCI']
+        grp_demand = df_season.groupby(df_season.index.hour)[f'{reg}_DEMANDA']
+        if grp_utci.mean().empty:
+            continue
+
+        h_max      = grp_utci.mean().idxmax()
+        utci_max   = grp_utci.mean().max()
+        dem_at_max = grp_demand.mean().loc[h_max]
+
+        results.append({
+            'Region':         reg,
+            'Season_ES':      season_name,   # ya está en inglés: "Winter", "Spring", etc.
+            'Max_UTCI_Hour':  h_max,
+            'Max_UTCI':       utci_max,
+            'Average_Demand': dem_at_max
+        })
+
+# 2) DataFrame y redondeo
+df_max = pd.DataFrame(results).round(1)
+
+# 3) Renombrar “Season_ES” a “Season” (sin traducir)
+df_max.rename(columns={'Season_ES': 'Season'}, inplace=True)
+
+# 4) Asignar categoría de estrés térmico
+df_max['Stress_Category'] = df_max['Max_UTCI'].apply(get_stress_abbr)
+
+# 5) Reordenar columnas
+df_max = df_max[
+    ['Region', 'Season', 'Max_UTCI_Hour', 'Max_UTCI', 'Stress_Category', 'Average_Demand']
+]
+
+# 3) Renombrar “Season_ES” a “Season” (sin traducir)
+df_max.rename(columns={'Season_ES': 'Season'}, inplace=True)
+
+# 4) Asignar categoría de estrés térmico
+df_max['Stress_Category'] = df_max['Max_UTCI'].apply(get_stress_abbr)
+
+# 5) Reordenar columnas
+df_max = df_max[
+    ['Region', 'Season', 'Max_UTCI_Hour', 'Max_UTCI', 'Stress_Category', 'Average_Demand']
+]
+
+# 1) (Optional) Rename columns if you want user‐friendly headers in English:
+df_to_print = df_max.rename(columns={
+    'Region':          'Region',
+    'Season':          'Season',
+    'Max_UTCI_Hour':   'UTCI Peak Hour',
+    'Max_UTCI':        'Max UTCI',
+    'Stress_Category': 'Thermal Stress Category',
+    'Average_Demand':  'Average Demand'
+})
+
+# 2) (Optional) Round numeric columns to 1 decimal place:
+# df_to_print['Max UTCI']      = df_to_print['Max UTCI'].round(1)
+# df_to_print['Average Demand'] = df_to_print['Average Demand'].round(1)
+
+
+# 1) Creamos dos diccionarios que guarden el valor de Winter para cada región
+winter_utci = df_max[df_max['Season'] == 'Winter'].set_index('Region')['Max_UTCI'].to_dict()
+winter_demand = df_max[df_max['Season'] == 'Winter'].set_index('Region')['Average_Demand'].to_dict()
+
+# 2) Definimos funciones que calculen el cambio relativo:
+def rel_change_utci(row):
+    base = winter_utci[row['Region']]
+    return (row['Max_UTCI'] - base)
+
+def rel_change_demand(row):
+    base = winter_demand[row['Region']]
+    return (row['Average_Demand'] - base) / base *100
+
+# 3) Añadimos columnas nuevas al DataFrame
+df_max['RelChange_Max_UTCI'] = df_max.apply(rel_change_utci, axis=1).round(1)
+df_max['RelChange_Demand'] = df_max.apply(rel_change_demand, axis=1).round(1)
+
+# 4) Para claridad, reordenamos columnas y mostramos resultado
+cols = [
+    'Region', 'Season', 'Max_UTCI_Hour', 'Max_UTCI', 'RelChange_Max_UTCI',
+    'Average_Demand', 'RelChange_Demand', 'Stress_Category'
+]
+df_with_rel = df_max[cols]
+
+
+
+Markdown(tabulate(df_with_rel, 
+headers=["Region","Season", "UTCI Peak Hour [h]","Max UTCI [$^oC$]","Relative Change UTCI [$^oC$]","Hourly Electric Average Demand [$MWh$]","Percentage Relative Change Demand [%]","Thermal Stress Category"])) 
+ 
+
+```
