@@ -124,5 +124,5 @@ df_with_rel = df_max[cols]
 Markdown(tabulate(df_with_rel, 
 headers=["Region","Season", "UTCI Peak Hour [h]","Max UTCI [$^oC$]","Relative Change UTCI [$^oC$]","Hourly Electric Average Demand [$MWh$]","Percentage Relative Change Demand [%]","Thermal Stress Category"])) 
  
-
+df_with_rel
 ```
