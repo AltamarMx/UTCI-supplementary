@@ -45,10 +45,10 @@ analyze('BCS', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='BCS',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='BCS',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='BCS',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='BCS',kind='Region')    
   
 
 ```
@@ -83,10 +83,10 @@ analyze('BC', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='BC',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='BC',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='BC',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='BC',kind='Region')    
   
 
 ```
@@ -119,10 +119,10 @@ analyze('PEN', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='PEN',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='PEN',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='PEN',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='PEN',kind='Region')    
   
 
 ```
@@ -154,10 +154,10 @@ analyze('NO', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='NO',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='NO',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='NO',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='NO',kind='Region')    
   
 
 ```
@@ -189,10 +189,10 @@ analyze('N', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='N',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='N',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='N',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='N',kind='Region')    
   
 
 ```
@@ -224,10 +224,10 @@ analyze('CEN', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='CEN',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='CEN',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='CEN',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='CEN',kind='Region')    
   
 
 ```
@@ -259,10 +259,10 @@ analyze('NE', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='NE',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='NE',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='NE',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='NE',kind='Region')    
   
 
 ```
@@ -294,10 +294,10 @@ analyze('ORI', './data/demanda_utci_regions.parquet', 'Region')
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='ORI',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='ORI',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='ORI',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='ORI',kind='Region')    
   
 
 ```
@@ -322,20 +322,37 @@ analyze('OCC', './data/demanda_utci_regions.parquet', 'Region')
   
 
 ```
-
+<!-- 
 ## Relative increase
 ```{python}
 #| layout-ncol: 2
 #| echo: false
 
 
-from utils.analisis import plot_demand_increase
+from utils.analisis import plot_demand_with_table
 
-plot_demand_increase('data/demanda_utci_ciudades.parquet',region='OCC',kind='City')
-plot_demand_increase('data/demanda_utci_regions.parquet',region='OCC',kind='Region')    
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='OCC',kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',region='OCC',kind='Region')    
   
 
 ```
 
-:::
+::: --> 
 
+
+
+## Relative increase 
+
+```{python}
+#| layout-ncol: 2
+#| echo: false
+
+from utils.analisis import plot_demand_with_table
+
+plot_demand_with_table('data/demanda_utci_ciudades.parquet',
+                       region='OCC', kind='City')
+plot_demand_with_table('data/demanda_utci_regions.parquet',
+                       region='OCC', kind='Region')
+
+```
+:::

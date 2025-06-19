@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.ticker as mticker
 from matplotlib.lines import Line2D
+from tabulate import tabulate
+from IPython.display import display, Markdown
+
 
 def compare_utci(region,
                  region_file='data/demanda_utci_regiones.parquet',
@@ -346,7 +349,7 @@ def plot_demand_increase(data_file: str,
                 bbox=dict(facecolor='white', edgecolor='none', pad=1))
 
     ax.set_title(f"{kind}", fontsize=14)
-    ax.set_ylabel('Δ Demand (%)')
+    ax.set_ylabel('Electricity demand differences (%)')
     ax.set_xlabel('Season')
     ax.set_ylim(0,100)
     ax.grid(alpha=0.3)
@@ -364,3 +367,100 @@ def plot_demand_increase(data_file: str,
 
     plt.tight_layout(rect=[0,0.05,1,1])
     plt.show()
+
+
+# import pandas as pd
+# import matplotlib.pyplot as plt
+
+# asegúrate de tener definida tu paleta de colores y tu función de categoría
+# from .analisis import seasons, get_stress_abbr as get_stress_category, color_map
+
+def plot_demand_with_table(data_file: str,
+                           region: str,
+                           kind: str = 'Region',
+                           figsize: tuple = (5, 5)) -> None:
+    """
+    Grafica el incremento de demanda (%) respecto a Winter para una región o ciudad,
+    anotando el valor de UTCI (°C) y coloreando según la categoría de estrés térmico.
+    Debajo de la gráfica, muestra la tabla con los valores por temporada.
+    """
+    # 1) Leer datos y asegurar índice datetime
+    df = pd.read_parquet(data_file)
+    if not isinstance(df.index, pd.DatetimeIndex):
+        df.index = pd.to_datetime(df.index)
+
+    # 2) Calcular estadísticas por temporada
+    records = []
+    utci_col = f"{region}_UTCI"
+    dem_col  = f"{region}_DEMANDA"
+    for season, months in seasons.items():
+        sub = df[df.index.month.isin(months)]
+        if utci_col not in sub or dem_col not in sub:
+            continue
+        grp = sub.groupby(sub.index.hour)
+        utci_mean = grp[utci_col].mean()
+        dem_mean  = grp[dem_col].mean()
+        if utci_mean.empty:
+            continue
+        h_max    = utci_mean.idxmax()
+        utci_max = round(utci_mean.loc[h_max], 1)
+        dem_at   = round(dem_mean.loc[h_max], 1)
+        cat = get_stress_category(utci_max)
+        records.append({
+            'Season':        season,
+            'Peak Hour [h]': h_max,
+            'Max UTCI [°C]': utci_max,
+            'Avg Demand [MWh]': dem_at,
+            'Δ Demand [%]':  None,   # se calcula luego
+            'Stress':        cat
+        })
+
+    df_stats = pd.DataFrame(records).set_index('Season').reindex(['Winter','Spring','Summer','Autumn'])
+    if 'Winter' not in df_stats.index:
+        raise ValueError(f"Faltan datos de Winter para {region}")
+    base = df_stats.at['Winter', 'Avg Demand [MWh]']
+    df_stats['Δ Demand [%]'] = ((df_stats['Avg Demand [MWh]'] - base) / base * 100).round(1)
+
+    # 3) Graficar
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.plot(df_stats.index, df_stats['Δ Demand [%]'], linestyle='--', alpha=0.7)
+    ax.axhline(0, linestyle=':', linewidth=0.8)
+
+    for season in df_stats.index:
+        y   = df_stats.at[season, 'Δ Demand [%]']
+        ut  = df_stats.at[season, 'Max UTCI [°C]']
+        cat = df_stats.at[season, 'Stress']
+        ax.scatter(season, y,
+                   color=color_map.get(cat, 'gray'),
+                   s=100, edgecolor='k', zorder=3)
+        ax.text(season, y + 2,
+                f"{ut:.1f}°C",
+                ha='center', va='bottom', fontsize=12,
+                bbox=dict(facecolor='white', edgecolor='none', pad=1))
+
+    ax.set_title(f"{kind} – {region}", fontsize=14)
+    ax.set_xlabel('Season')
+    ax.set_ylabel('Electricity demand difference [%]')
+    ax.set_ylim(df_stats['Δ Demand [%]'].min() - 5, df_stats['Δ Demand [%]'].max() + 5)
+    ax.grid(alpha=0.3)
+
+    # leyenda de estrés
+    handles = [
+        Line2D([0],[0], marker='o', color='w', label=lbl,
+               markerfacecolor=col, markersize=8, markeredgecolor='k')
+        for lbl, col in color_map.items()
+    ]
+    fig.legend(handles=handles,
+               loc='lower center', ncol=len(color_map),
+               frameon=False, bbox_to_anchor=(0.5, -0.15))
+
+    plt.tight_layout(rect=[0,0.05,1,1])
+    plt.show()
+
+    # 4) Mostrar tabla en Markdown
+    table = df_stats.reset_index()
+    md_table = tabulate(table,
+                        headers=table.columns,
+                        tablefmt='pipe',
+                        showindex=False)
+    display(Markdown(md_table))
