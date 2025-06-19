@@ -378,7 +378,7 @@ def plot_demand_increase(data_file: str,
 def plot_demand_with_table(data_file: str,
                            region: str,
                            kind: str = 'Region',
-                           figsize: tuple = (5, 5)) -> None:
+                           figsize: tuple = (4.4, 4.5)) -> None:
     """
     Grafica el incremento de demanda (%) respecto a Winter para una región o ciudad,
     anotando el valor de UTCI (°C) y coloreando según la categoría de estrés térmico.
