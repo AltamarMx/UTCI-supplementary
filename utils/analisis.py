@@ -441,7 +441,7 @@ def plot_demand_with_table(data_file: str,
     ax.set_title(f"{kind} – {region}", fontsize=14)
     ax.set_xlabel('Season')
     ax.set_ylabel('Electricity demand difference [%]')
-    ax.set_ylim(df_stats['Δ Demand [%]'].min() - 5, df_stats['Δ Demand [%]'].max() + 5)
+    ax.set_ylim(0, 100)
     ax.grid(alpha=0.3)
 
     # leyenda de estrés
