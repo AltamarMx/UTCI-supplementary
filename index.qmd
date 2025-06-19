@@ -49,7 +49,7 @@ from utils.analisis import plot_demand_with_table
 
 plot_demand_with_table('data/demanda_utci_ciudades.parquet',region='BCS',kind='City')
 plot_demand_with_table('data/demanda_utci_regions.parquet',region='BCS',kind='Region')    
-  
+   
 
 ```
 

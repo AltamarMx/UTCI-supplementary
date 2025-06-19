@@ -141,9 +141,12 @@ def compare_utci(region,
     plt.tight_layout(rect=[0, 0.03, 1, 1])
     plt.show()
 
+
+
 def analyze(region, data_file, title):
     """
-    Analiza y grafica la relación entre UTCI y demanda para una sola fuente de datos.
+    Analiza y grafica la relación entre UTCI y demanda para una sola fuente de datos,
+    incluyendo una leyenda de temporadas en la parte inferior.
 
     Parámetros:
       - region: nombre de la región (ej. 'BC', 'CEN', etc.)
@@ -152,12 +155,12 @@ def analyze(region, data_file, title):
     """
     # 1) Configuración común
     stress_cats = [
-        ("MC", -13,  0),
-        ("SC",   0,  9),
-        ("NT",   9, 26),
-        ("MH",  26, 32),
-        ("SH",  32, 38),
-        ("VSH", 38, 46),
+        ("MC", -13,   0),
+        ("SC",   0,   9),
+        ("NT",   9,  26),
+        ("MH",  26,  32),
+        ("SH",  32,  38),
+        ("VSH", 38,  46),
     ]
     seasons = {
         'Winter': [12, 1, 2],
@@ -171,18 +174,19 @@ def analyze(region, data_file, title):
     if not isinstance(df.index, pd.DatetimeIndex):
         df.index = pd.to_datetime(df.index)
 
-    # 3) Extraer series y DataFrame base
-    s_utci = df[f"{region}_UTCI"].dropna()
-    s_dem  = df[f"{region}_DEMANDA"].dropna()
-    df_panel = pd.DataFrame({'UTCI': s_utci, 'DEMANDA': s_dem})
+    # 3) Crear DataFrame con las dos series
+    df_panel = pd.DataFrame({
+        'UTCI':   df[f"{region}_UTCI"],
+        'DEMANDA': df[f"{region}_DEMANDA"]
+    }).dropna()
 
-    # 4) Crear figura
+    # 4) Crear figura y ejes
     fig, ax = plt.subplots(figsize=(5, 5))
 
-    # 4a) sombreado de categorías y etiquetas
+    # 4a) sombreado de categorías UTCI
     for i, (abbr, x0, x1) in enumerate(stress_cats):
         ax.axvspan(x0, x1,
-                   color='lightgrey' if i%2==0 else 'white',
+                   color='lightgrey' if i % 2 == 0 else 'white',
                    alpha=0.2, zorder=0)
         mid = x0 + (x1 - x0) / 2
         ax.text(mid, 0.92, abbr,
@@ -190,7 +194,7 @@ def analyze(region, data_file, title):
                 ha='left', va='bottom', fontsize=8,
                 clip_on=False, zorder=5)
 
-    # 4b) scatter y medias por estación
+    # 4b) scatter general + medias por temporada
     colors = {}
     for season, meses in seasons.items():
         sub = df_panel[df_panel.index.month.isin(meses)]
@@ -203,7 +207,8 @@ def analyze(region, data_file, title):
         y = grp['DEMANDA'].mean()
         line, = ax.plot(x, y, '-', label=season, zorder=2)
         colors[season] = line.get_color()
-        # marcadores especiales
+
+        # puntos destacados (hora 12 y 23)
         special = {12: 'o', 23: 's'}
         rest = [h for h in x.index if h not in special]
         ax.scatter(x.loc[rest], y.loc[rest],
@@ -215,18 +220,15 @@ def analyze(region, data_file, title):
                            marker=m, s=40,
                            color=line.get_color(), zorder=4)
 
-    # 4c) ejes, formato y título
+    # 4c) formato de ejes y título
     ax.set_title(title, loc='center', fontsize=12, pad=6)
-    ax.set_xlabel("UTCI")
+    ax.set_xlabel("UTCI [°C]")
     ax.set_ylabel("Demand [MWh]")
     ax.grid(alpha=0.3, zorder=5)
-    ax.yaxis.set_major_formatter(
-        mticker.StrMethodFormatter("{x:,.0f}")
-    )
+    ax.yaxis.set_major_formatter(mticker.StrMethodFormatter("{x:,.0f}"))
 
     # 4d) histogramas marginales
     div = make_axes_locatable(ax)
-    # demanda a la derecha
     ax_hist_y = div.append_axes("right", size="15%", pad=0)
     for season, meses in seasons.items():
         sel = df_panel[df_panel.index.month.isin(meses)]['DEMANDA']
@@ -235,7 +237,6 @@ def analyze(region, data_file, title):
                        color=colors[season], alpha=0.4)
     ax_hist_y.axis('off')
 
-    # UTCI ponderado arriba
     ax_hist_x = div.append_axes("top", size="15%", pad=0.1)
     mask = df_panel['UTCI'].notna() & df_panel['DEMANDA'].notna()
     ax_hist_x.hist(
@@ -249,8 +250,21 @@ def analyze(region, data_file, title):
     ax_hist_x.axis('off')
     ax.set_zorder(ax_hist_x.get_zorder() + 1)
 
+    # ————— Añadir leyenda de temporadas en la parte inferior —————
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(
+        handles, labels,
+        loc='lower center',
+        ncol=len(seasons),
+        frameon=False,
+        bbox_to_anchor=(0.5, -0.02),
+    )
+    # —————————————————————————————————————————————
+
     plt.tight_layout()
     plt.show()
+
+
 
 
 
@@ -438,7 +452,7 @@ def plot_demand_with_table(data_file: str,
                 ha='center', va='bottom', fontsize=12,
                 bbox=dict(facecolor='white', edgecolor='none', pad=1))
 
-    ax.set_title(f"{kind} – {region}", fontsize=14)
+    ax.set_title(f"{kind}", fontsize=14)
     ax.set_xlabel('Season')
     ax.set_ylabel('Electricity demand difference [%]')
     ax.set_ylim(0, 100)
