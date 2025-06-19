@@ -8,7 +8,7 @@ format:
   dashboard:
     # logo: images/penguins.png
     # nav-buttons: [ github]
-    embed-resources: false
+    embed-resources: True
 
 ---
 
